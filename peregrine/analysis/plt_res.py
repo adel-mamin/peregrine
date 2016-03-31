@@ -2,6 +2,8 @@
 
 import os,sys,argparse,json,numpy
 import matplotlib.pyplot as plt
+import scipy.constants as const
+import peregrine.gps_constants as gps_constants
 
 CN0STRING="avgcn0"     # CN0 from tracking
 #CN0STRING="iqgencn0"  # CN0 from iqgen
@@ -49,6 +51,9 @@ def lockrateCn0Plot(filename):
     #plt.scatter(avgcn0, lockrate)
     plt.show()
 
+def acc_in_g(acc):
+    return acc * const.c / gps_constants.l2 / const.g
+
 def dynamicAccPlot(filename, mode):
     fp = open(filename, "r")
     s = fp.read()
@@ -86,17 +91,17 @@ def dynamicAccPlot(filename, mode):
                     if mode == "lockrate" and lockrate >= 0.68:
                         bestAcc = acc
                         bestCN0 = cn0
-                        plt.plot(bestCN0, bestAcc, 'bo')
+                        plt.plot(bestCN0, acc_in_g(bestAcc), 'bo')
                     elif mode == "doperr" and doperr <= 1.0 / (12*0.02): # 1/12T, Tcoh=20 ms
                         bestAcc = acc
                         bestCN0 = cn0
-                        plt.plot(bestCN0, bestAcc, 'bo')
+                        plt.plot(bestCN0, acc_in_g(bestAcc), 'bo')
         if bestAcc >= 0:
             print "BEST", bestAcc, bestCN0
             r.append( (bestAcc, bestCN0) )
-          
 
-    bestAcc = map(lambda x:x[0], r)
+
+    bestAcc = map(lambda x:acc_in_g(x[0]), r)
     bestCN0 = map(lambda x:x[1], r)
 
     print "ACC",bestAcc
@@ -106,7 +111,7 @@ def dynamicAccPlot(filename, mode):
     #plt.plot(cn0VecAll, accVecAll, 'bo')
     plt.plot(bestCN0, bestAcc, 'r.-')
     plt.xlabel('CN0')
-    plt.ylabel('Acceleration Hz/s')
+    plt.ylabel('Acceleration [units of G]')
     plt.grid()
     if mode == "lockrate":
         plt.title("PLL lock rate >= 0.68 (1-sigma)")
