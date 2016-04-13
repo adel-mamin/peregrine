@@ -19,6 +19,8 @@ import numpy
 
 from peregrine.include.generateL2CMcode import L2CMCodes
 
+caCodes = (L2CMCodes < 0).astype(numpy.uint8)
+
 
 class PrnCode(object):
   '''
@@ -42,11 +44,7 @@ class PrnCode(object):
         SV identifier
       '''
       super(PrnCode.CM_Code, self).__init__()
-      self.caCode = L2CMCodes[prnNo - 1][:]
-      self.binCode = numpy.ndarray(
-          PrnCode.CM_Code.CODE_LENGTH, dtype=numpy.bool)
-      self.binCode[:] = numpy.asarray(self.caCode) < 0
-      self.prnNo = prnNo
+      self.binCode = caCodes[prnNo - 1]
 
     def getCodeBits(self):
       return self.binCode
